@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results - Global Shopping</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .search-page {
+            padding: 60px 0;
+            background-color: #fff;
+        }
+        
+        .search-header {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .search-query {
+            font-weight: bold;
+            color: #ff6b6b;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 50px 0;
+            font-size: 1.2rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1>u5168u7403u8d2du7269</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html">u9996u9875</a></li>
+                    <li><a href="products.html">u5168u90e8u5546u54c1</a></li>
+                    <li><a href="categories.html">u5546u54c1u5206u7c7b</a></li>
+                </ul>
+            </nav>
+            <div class="search-cart">
+                <div class="search">
+                    <input type="text" placeholder="u641cu7d22u5546u54c1...">
+                    <button><i class="fas fa-search"></i></button>
+                </div>
+                <div class="cart">
+                    <a href="cart.html"><i class="fas fa-shopping-cart"></i> <span id="cart-count">0</span></a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="search-page">
+        <div class="container">
+            <div class="search-header">
+                <h1 class="section-title">u641cu7d22u7ed3u679c</h1>
+                <p>u4e0e "<span id="search-query"></span>" u76f8u5173u7684u5546u54c1</p>
+            </div>
+            <div class="products-grid" id="search-results">
+                <!-- u641cu7d22u7ed3u679cu5c06u901au8fc7JavaScriptu52a8u6001u52a0u8f7d -->
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section about">
+                    <h3>u5173u4e8eu6211u4eec</h3>
+                    <p>u5168u7403u8d2du7269u662fu60a8u503cu5f97u4fe1u8d56u7684u5168u7403u8d2du7269u5e73u53f0uff0cu63d0u4f9bu6765u81eau4e16u754cu5404u5730u7684u4f18u8d28u5546u54c1u3002</p>
+                    <div class="social">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+                <div class="footer-section links">
+                    <h3>u5febu901fu94feu63a5</h3>
+                    <ul>
+                        <li><a href="index.html">u9996u9875</a></li>
+                        <li><a href="products.html">u5168u90e8u5546u54c1</a></li>
+                        <li><a href="categories.html">u5546u54c1u5206u7c7b</a></li>
+                        <li><a href="about.html">u5173u4e8eu6211u4eec</a></li>
+                        <li><a href="contact.html">u8054u7cfbu6211u4eec</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section links">
+                    <h3>u5ba2u6237u670du52a1</h3>
+                    <ul>
+                        <li><a href="privacy.html">u9690u79c1u653fu7b56</a></li>
+                        <li><a href="terms.html">u4f7fu7528u6761u6b3e</a></li>
+                        <li><a href="shipping.html">u914du9001u653fu7b56</a></li>
+                        <li><a href="returns.html">u9000u8d27u653fu7b56</a></li>
+                        <li><a href="faq.html">u5e38u89c1u95eeu9898</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section contact">
+                    <h3>u8054u7cfbu6211u4eec</h3>
+                    <p><i class="fas fa-map-marker-alt"></i> u5730u5740uff1au4e0au6d77u5e02u6d66u4e1cu65b0u533au5f20u6c5fu9ad8u79d1u6280u56edu533a</p>
+                    <p><i class="fas fa-phone"></i> u7535u8bdduff1a+86 123 4567 8910</p>
+                    <p><i class="fas fa-envelope"></i> u90aeu7bb1uff1acontact@globalshopping.com</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 u5168u7403u8d2du7269. u4fddu7559u6240u6709u6743u5229.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="products.js"></script>
+    <script src="main.js"></script>
+</body>
+</html>

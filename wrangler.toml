@@ -1,0 +1,7 @@
+name = "poatransport"
+main = "worker.js"
+compatibility_date = "2023-01-01"
+
+[assets]
+directory = "./"
+binding = "ASSETS"
