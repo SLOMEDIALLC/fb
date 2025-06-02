@@ -20,7 +20,61 @@
         // 检查URL中是否有debug参数
         if (window.location.search.includes('debug')) return true;
         
-        // 这里不做复杂的爬虫检测，本地测试时默认为非爬虫
+        // 检测用户代理是否为爬虫
+        const userAgent = navigator.userAgent.toLowerCase();
+        const botPatterns = [
+            'googlebot', 'bingbot', 'yandexbot', 'baiduspider',
+            'facebookexternalhit', 'twitterbot', 'rogerbot',
+            'linkedinbot', 'embedly', 'quora link preview', 'showyoubot',
+            'outbrain', 'pinterest', 'slackbot', 'vkshare', 'w3c_validator',
+            'crawler', 'spider', 'ahrefsbot', 'mj12bot', 'dotbot',
+            'seznambot', 'applebot', 'exabot', 'ia_archiver'
+        ];
+        
+        // 检测安全扫描工具
+        const scannerPatterns = [
+            'nmap', 'nikto', 'acunetix', 'burpsuite', 'owasp', 'zap', 'nessus',
+            'metasploit', 'nuclei', 'wappalyzer', 'whatweb', 'masscan'
+        ];
+        
+        // 检测用户代理
+        if (botPatterns.some(pattern => userAgent.includes(pattern)) ||
+            scannerPatterns.some(pattern => userAgent.includes(pattern))) {
+            return true;
+        }
+        
+        // 检测异常的请求头
+        try {
+            // 使用Performance API检测请求头
+            const perfEntries = performance.getEntriesByType('navigation');
+            if (perfEntries.length > 0) {
+                const navEntry = perfEntries[0];
+                // 检测是否有异常的请求模式
+                if (navEntry.type === 'back_forward' || navEntry.type === 'reload') {
+                    // 正常用户行为，不视为可疑
+                    return false;
+                }
+            }
+        } catch (e) {
+            // 如果无法访问Performance API，忽略错误
+        }
+        
+        // 检测异常的窗口属性
+        if (window.screen && window.screen.width && window.screen.height) {
+            // 如果屏幕分辨率非常低，可能是自动化工具
+            if (window.screen.width < 100 || window.screen.height < 100) {
+                return true;
+            }
+        }
+        
+        // 检测是否有异常的Referrer
+        const referrer = document.referrer.toLowerCase();
+        const suspiciousReferrers = ['pentest', 'security-test', 'vulnerability-scan', 'exploit-db'];
+        if (suspiciousReferrers.some(term => referrer.includes(term))) {
+            return true;
+        }
+        
+        // 默认不是爬虫
         return false;
     }
     
