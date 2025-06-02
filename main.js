@@ -38,13 +38,13 @@ function createProductCard(product) {
     // Create product card with error handling for images
     productCard.innerHTML = `
         <div class="product-image">
-            <a href="/product?id=${product.id}">
+            <a href="product.html?id=${product.id}">
                 <img src="${product.image}" alt="${product.name}" onerror="this.onerror=null; this.src='${backupImg}';"> 
             </a>
         </div>
         <div class="product-info">
             <h3>
-                <a href="/product?id=${product.id}">
+                <a href="product.html?id=${product.id}">
                     ${product.name}
                 </a>
             </h3>
@@ -599,12 +599,12 @@ function loadCategories() {
         
         categoryCard.innerHTML = `
             <div class="category-image">
-                <a href="/category?id=${categoryId}">
+                <a href="category.html?id=${categoryId}">
                     <img src="${categoryImage}" alt="${category}" onerror="this.onerror=null; this.src='${backupImg}';">
                 </a>
             </div>
             <div class="category-info">
-                <h3><a href="/category?id=${categoryId}">${category}</a></h3>
+                <h3><a href="category.html?id=${categoryId}">${category}</a></h3>
             </div>
         `;
         
