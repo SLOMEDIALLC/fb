@@ -1,4 +1,4 @@
-name = "poatransport"
+name = "fb"
 main = "worker.js"
 compatibility_date = "2023-01-01"
 
